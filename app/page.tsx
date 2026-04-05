@@ -16,7 +16,14 @@ interface Car {
   main_image: string;
 }
 
-// 🚗 Dummy Cars Data
+interface FilterType {
+  brand?: string;
+  model?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  year?: string;
+}
+
 const DUMMY_CARS: Car[] = [
   {
     id: 1,
@@ -80,75 +87,79 @@ const DUMMY_CARS: Car[] = [
   },
 ];
 
-interface FilterType {
-  brand?: string;
-  model?: string;
-  minPrice?: number;
-  maxPrice?: number;
-}
-
 export default function Home() {
   const [cars, setCars] = useState<Car[]>(DUMMY_CARS);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSearch = (newFilters: FilterType) => {
     setIsLoading(true);
-    setFilters(newFilters);
-    
-    // Filter dummy data locally
+
     let filtered = DUMMY_CARS;
-    
+
     if (newFilters.brand) {
-      filtered = filtered.filter(car => 
-        car.brand.toLowerCase().includes(newFilters.brand.toLowerCase())
+      filtered = filtered.filter((car) =>
+        car.brand.toLowerCase().includes(newFilters.brand!.toLowerCase())
       );
     }
+
     if (newFilters.model) {
-      filtered = filtered.filter(car => 
-        car.model.toLowerCase().includes(newFilters.model.toLowerCase())
+      filtered = filtered.filter((car) =>
+        car.model.toLowerCase().includes(newFilters.model!.toLowerCase())
       );
     }
+
     if (newFilters.minPrice) {
-      filtered = filtered.filter(car => car.price >= parseFloat(newFilters.minPrice));
+      filtered = filtered.filter(
+        (car) => car.price >= parseFloat(newFilters.minPrice!)
+      );
     }
+
     if (newFilters.maxPrice) {
-      filtered = filtered.filter(car => car.price <= parseFloat(newFilters.maxPrice));
+      filtered = filtered.filter(
+        (car) => car.price <= parseFloat(newFilters.maxPrice!)
+      );
     }
+
     if (newFilters.year) {
-      filtered = filtered.filter(car => car.year === parseInt(newFilters.year));
+      filtered = filtered.filter(
+        (car) => car.year === parseInt(newFilters.year!)
+      );
     }
-    
+
     setTimeout(() => {
       setCars(filtered);
       setIsLoading(false);
-    }, 300);
+    }, 200);
   };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-12 mb-8">
-        <h1 className="text-4xl font-bold mb-4">Welcome to CarMarket</h1>
-        <p className="text-lg mb-6">Find your perfect car or sell yours today. The easiest peer-to-peer car marketplace.</p>
-        <Link href="/register" className="bg-white text-blue-600 px-6 py-3 rounded font-semibold hover:bg-gray-100 inline-block">
-          Get Started
-        </Link>
+      <section className="bg-linear-to-r from-blue-600 to-blue-800 text-white rounded-3xl p-12 mb-10 shadow-lg shadow-blue-200/30">
+        <div className="max-w-3xl">
+          <h1 className="text-5xl font-bold mb-4">Find Your Next Car</h1>
+          <p className="text-lg text-blue-100 mb-6">
+            Browse premium cars, compare prices, and connect with sellers instantly.
+          </p>
+          <Link href="/register" className="inline-flex items-center gap-2 bg-white text-blue-700 px-7 py-3 rounded-full font-semibold shadow-md hover:bg-blue-50">
+            Start Selling or Buying
+          </Link>
+        </div>
       </section>
 
-      {/* Search Section */}
-      <SearchFilter onSearch={handleSearch} />
+      <div className="mb-8">
+        <SearchFilter onSearch={handleSearch} />
+      </div>
 
-      {/* Cars Grid */}
       {isLoading ? (
-        <div className="text-center py-12">
+        <div className="text-center py-16">
           <p className="text-gray-600">Loading cars...</p>
         </div>
       ) : cars.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg">
-          <p className="text-gray-600 text-lg">No cars found. Try adjusting your filters.</p>
+        <div className="text-center py-16 bg-white rounded-3xl shadow-lg">
+          <p className="text-gray-600 text-lg">No cars found with these filters.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
           {cars.map((car) => (
             <CarCard key={car.id} car={car} />
           ))}

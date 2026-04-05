@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -16,7 +16,6 @@ interface CartItem {
   main_image: string;
 }
 
-// 🛒 Dummy Cart Data
 const DUMMY_CART_ITEMS: CartItem[] = [
   {
     id: 1,
@@ -38,10 +37,10 @@ export default function CartPage() {
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
-  const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const handleRemoveFromCart = (id: number) => {
-    setItems(items.filter(item => item.id !== id));
+    setItems(items.filter((item) => item.id !== id));
   };
 
   const handleCheckout = () => {
@@ -52,7 +51,7 @@ export default function CartPage() {
 
     setIsCheckingOut(true);
     setTimeout(() => {
-      alert('✅ Order placed successfully! Check your profile for order details');
+      alert('? Order placed successfully! Check your profile for order details');
       setItems([]);
       router.push('/profile');
     }, 1000);
@@ -63,86 +62,73 @@ export default function CartPage() {
       <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
 
       {items.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg">
+        <div className="rounded-3xl bg-white p-10 text-center shadow-lg">
           <p className="text-gray-600 text-lg mb-4">Your cart is empty</p>
-          <Link href="/" className="text-blue-600 hover:underline">
+          <Link href="/" className="inline-flex rounded-full bg-blue-600 px-6 py-3 text-white hover:bg-blue-700">
             Continue shopping
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow">
-              {items.map((item: CartItem) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between p-4 border-b last:border-b-0"
-                >
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{item.title}</h3>
-                    <p className="text-gray-600 text-sm">
-                      {item.brand} {item.model} • {item.year}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold">${item.price.toLocaleString()}</p>
-                    <button
-                      onClick={() => handleRemoveFromCart(item.id)}
-                      className="text-red-600 text-sm hover:underline mt-2"
-                    >
-                      Remove
-                    </button>
-                  </div>
+        <div className="grid gap-8 lg:grid-cols-3">
+          <div className="lg:col-span-2 space-y-4">
+            {items.map((item) => (
+              <div key={item.id} className="rounded-3xl bg-white p-5 shadow-lg flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="text-xl font-semibold">{item.title}</h3>
+                  <p className="text-gray-500">{item.brand} {item.model} • {item.year}</p>
                 </div>
-              ))}
-            </div>
+                <div className="text-right">
+                  <p className="font-semibold">${item.price.toLocaleString()}</p>
+                  <button
+                    onClick={() => handleRemoveFromCart(item.id)}
+                    className="mt-3 rounded-full bg-red-100 px-4 py-2 text-red-600 hover:bg-red-200"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6 h-fit">
-            <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
+          <div className="rounded-3xl bg-white p-6 shadow-lg">
+            <h2 className="text-2xl font-semibold mb-6">Order Summary</h2>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Delivery Address
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Address</label>
               <textarea
                 value={deliveryAddress}
                 onChange={(e) => setDeliveryAddress(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500"
                 rows={4}
+                className="w-full rounded-3xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter your delivery address"
               />
             </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Payment Method
-              </label>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500"
+                className="w-full rounded-3xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="credit_card">💳 Credit Card</option>
-                <option value="bank_transfer">🏦 Bank Transfer</option>
-                <option value="cash">💵 Cash</option>
+                <option value="credit_card">Credit Card</option>
+                <option value="bank_transfer">Bank Transfer</option>
+                <option value="cash">Cash</option>
               </select>
             </div>
 
-            <div className="border-t pt-4 mb-4">
-              <div className="flex justify-between mb-2">
-                <span>Subtotal:</span>
+            <div className="rounded-3xl border border-gray-200 p-5 mb-6">
+              <div className="flex justify-between text-gray-500 mb-2">
+                <span>Subtotal</span>
                 <span>${total.toLocaleString()}</span>
               </div>
-              <div className="text-2xl font-bold">
-                Total: ${total.toLocaleString()}
-              </div>
+              <div className="text-2xl font-bold">Total: ${total.toLocaleString()}</div>
             </div>
 
             <button
               onClick={handleCheckout}
               disabled={isCheckingOut}
-              className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+              className="w-full rounded-full bg-blue-600 px-5 py-3 text-white font-semibold hover:bg-blue-700 disabled:bg-gray-300"
             >
               {isCheckingOut ? 'Processing...' : 'Checkout'}
             </button>
@@ -152,3 +138,5 @@ export default function CartPage() {
     </div>
   );
 }
+
+

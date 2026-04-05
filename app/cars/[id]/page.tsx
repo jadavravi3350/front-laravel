@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
 
-interface Car {
+interface CarDetail {
   id: number;
   title: string;
   brand: string;
@@ -18,7 +17,6 @@ interface Car {
   color: string;
   condition: string;
   features: string[];
-  images: string[];
   main_image: string;
   description: string;
   views: number;
@@ -30,10 +28,9 @@ interface Seller {
   last_name: string;
   phone: string;
   email: string;
-  profile_image: string;
 }
 
-const DUMMY_CARS_DETAIL: { [key: number]: Car } = {
+const DUMMY_CARS_DETAIL: { [key: number]: CarDetail } = {
   1: {
     id: 1,
     title: '2020 Toyota Camry',
@@ -47,9 +44,8 @@ const DUMMY_CARS_DETAIL: { [key: number]: Car } = {
     color: 'Silver',
     condition: 'Used',
     features: ['Air Conditioning', 'Power Steering', 'Power Windows', 'ABS'],
-    images: [],
     main_image: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=500&h=400&fit=crop',
-    description: 'Beautiful Toyota Camry in perfect condition. Well maintained with regular service records. Ideal family car with excellent fuel efficiency.',
+    description: 'Well-maintained Toyota Camry with full service history. Comfortable, efficient, and perfect for daily driving.',
     views: 342,
   },
   2: {
@@ -64,10 +60,9 @@ const DUMMY_CARS_DETAIL: { [key: number]: Car } = {
     transmission: 'Manual',
     color: 'Black',
     condition: 'Used',
-    features: ['Air Conditioning', 'Power Steering', 'CD Player', 'Power Mirrors'],
-    images: [],
+    features: ['Air Conditioning', 'Power Steering', 'CD Player', 'Cruise Control'],
     main_image: 'https://images.unsplash.com/photo-1590362891991-f776e747a588?w=500&h=400&fit=crop',
-    description: 'Reliable Honda Civic with low mileage. Single owner, accident free. Great for daily commute. All papers in order.',
+    description: 'Reliable Honda Civic in excellent condition. Comfortable ride and great fuel economy.',
     views: 289,
   },
   3: {
@@ -82,307 +77,114 @@ const DUMMY_CARS_DETAIL: { [key: number]: Car } = {
     transmission: 'Automatic',
     color: 'White',
     condition: 'Used',
-    features: ['Autopilot', 'Touchscreen', 'Premium Audio', 'Supercharging'],
-    images: [],
+    features: ['Autopilot', 'Touchscreen', 'Premium Audio', 'Fast Charging'],
     main_image: 'https://images.unsplash.com/photo-1560958089-b8a63dd8aa8b?w=500&h=400&fit=crop',
-    description: 'Premium Tesla Model 3 with latest technology. Electric vehicle with excellent range and performance. Perfect eco-friendly option.',
+    description: 'Premium Tesla Model 3 with advanced features and impressive range.',
     views: 567,
   },
 };
 
-const DUMMY_SELLERS: { [key: number]: Seller } = {
-  1: {
-    id: 1,
-    first_name: 'Ahmad',
-    last_name: 'Khan',
-    phone: '+92 300 1234567',
-    email: 'seller@test.com',
-    profile_image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=seller1',
-  },
-  2: {
-    id: 2,
-    first_name: 'Fatima',
-    last_name: 'Ali',
-    phone: '+92 321 9876543',
-    email: 'seller2@example.com',
-    profile_image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=seller2',
-  },
+const SELLER: Seller = {
+  id: 1,
+  first_name: 'Ahmad',
+  last_name: 'Khan',
+  phone: '+92 300 1234567',
+  email: 'seller@test.com',
 };
 
 export default function CarDetailPage() {
   const params = useParams();
-  const carId = parseInt(params.id as string);
-  const [car, setCar] = useState<Car | null>(null);
+  const carId = parseInt(params?.id as string, 10);
+  const [car, setCar] = useState<CarDetail | null>(null);
   const [seller, setSeller] = useState<Seller | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading delay
     setTimeout(() => {
       const carData = DUMMY_CARS_DETAIL[carId];
-      const sellerData = DUMMY_SELLERS[1]; // Default to first seller
-      
       if (carData) {
         setCar(carData);
-        setSeller(sellerData);
+        setSeller(SELLER);
       }
       setIsLoading(false);
     }, 300);
   }, [carId]);
 
   if (isLoading) {
-    return <div className="text-center py-12">Loading...</div>;
+    return <div className="text-center py-16">Loading car details...</div>;
   }
 
   if (!car) {
-    return <div className="text-center py-12">Car not found</div>;
+    return <div className="text-center py-16">Car not found.</div>;
   }
-
-  const handleAddToCart = () => {
-    alert('✅ Added to cart! Go to /cart to view');
-  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-          {/* Main Image */}
-          <div className="relative w-full h-96 bg-gray-200 rounded-lg overflow-hidden mb-4">
-            <img
-              src={car.main_image}
-              alt={car.title}
-              className="w-full h-full object-cover"
-            />
+      <div className="grid gap-8 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="rounded-3xl overflow-hidden shadow-lg bg-white">
+            <img src={car.main_image} alt={car.title} className="h-96 w-full object-cover" />
           </div>
 
-          {/* Title & Basic Info */}
-          <div className="bg-white p-6 rounded-lg shadow mb-4">
-            <h1 className="text-3xl font-bold mb-2">{car.title}</h1>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <div>
-                <p className="text-gray-600 text-sm">Brand</p>
-                <p className="font-semibold">{car.brand}</p>
+          <div className="rounded-3xl bg-white p-6 shadow-lg">
+            <h1 className="text-3xl font-bold mb-3">{car.title}</h1>
+            <p className="text-gray-600 mb-4">{car.brand} • {car.model} • {car.year}</p>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-3xl bg-gray-50 p-4">
+                <p className="text-sm text-gray-500">Price</p>
+                <p className="font-semibold text-blue-600">${car.price.toLocaleString()}</p>
               </div>
-              <div>
-                <p className="text-gray-600 text-sm">Model</p>
-                <p className="font-semibold">{car.model}</p>
+              <div className="rounded-3xl bg-gray-50 p-4">
+                <p className="text-sm text-gray-500">Mileage</p>
+                <p className="font-semibold">{car.mileage.toLocaleString()} km</p>
               </div>
-              <div>
-                <p className="text-gray-600 text-sm">Year</p>
-                <p className="font-semibold">{car.year}</p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm">Mileage</p>
-                <p className="font-semibold">{car.mileage?.toLocaleString()} km</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <p className="text-gray-600 text-sm">Fuel</p>
-                <p className="font-semibold">{car.fuel_type}</p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm">Transmission</p>
+              <div className="rounded-3xl bg-gray-50 p-4">
+                <p className="text-sm text-gray-500">Transmission</p>
                 <p className="font-semibold">{car.transmission}</p>
               </div>
-              <div>
-                <p className="text-gray-600 text-sm">Color</p>
-                <p className="font-semibold">{car.color}</p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm">Condition</p>
-                <p className="font-semibold">{car.condition}</p>
+              <div className="rounded-3xl bg-gray-50 p-4">
+                <p className="text-sm text-gray-500">Fuel</p>
+                <p className="font-semibold">{car.fuel_type}</p>
               </div>
             </div>
           </div>
 
-          {/* Description */}
-          {car.description && (
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-xl font-semibold mb-4">Description</h2>
-              <p className="text-gray-700">{car.description}</p>
-            </div>
-          )}
+          <div className="rounded-3xl bg-white p-6 shadow-lg">
+            <h2 className="text-2xl font-semibold mb-4">Description</h2>
+            <p className="text-gray-700">{car.description}</p>
+          </div>
         </div>
 
-        {/* Sidebar */}
-        <div>
-          {/* Price & Cart */}
-          <div className="bg-white p-6 rounded-lg shadow mb-4 sticky top-4">
-            <div className="mb-4">
-              <p className="text-gray-600 text-sm">Price</p>
-              <p className="text-4xl font-bold text-blue-600">
-                ${car.price.toLocaleString()}
-              </p>
-            </div>
-
+        <div className="space-y-6">
+          <div className="rounded-3xl bg-white p-6 shadow-lg">
+            <p className="text-gray-500 text-sm">Seller Price</p>
+            <p className="text-4xl font-bold text-blue-600 mb-6">${car.price.toLocaleString()}</p>
             <button
-              onClick={handleAddToCart}
-              className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 font-semibold mb-2"
+              onClick={() => alert('✅ Added to cart!')}
+              className="w-full rounded-full bg-blue-600 px-5 py-3 text-white hover:bg-blue-700"
             >
               Add to Cart
             </button>
-
-            <Link
-              href="/cart"
-              className="w-full block text-center bg-green-600 text-white py-2 rounded-md hover:bg-green-700"
-            >
+            <Link href="/cart" className="mt-3 block text-center rounded-full border border-blue-600 px-5 py-3 text-blue-600 hover:bg-blue-50">
               View Cart
             </Link>
-
-            {seller && (
-              <div className="border-t pt-4 mt-4">
-                <h3 className="font-semibold mb-4">Seller Information</h3>
-                <div>
-                  <p className="text-sm text-gray-600">Name</p>
-                  <p className="font-semibold mb-4">
-                    {seller.first_name} {seller.last_name}
-                  </p>
-
-                  <p className="text-sm text-gray-600">Phone</p>
-                  <p className="font-semibold mb-4">{seller.phone}</p>
-
-                  <p className="text-sm text-gray-600">Email</p>
-                  <p className="font-semibold">{seller.email}</p>
-                </div>
-
-                <button className="w-full mt-4 bg-green-600 text-white py-2 rounded-md hover:bg-green-700">
-                  Contact Seller
-                </button>
-              </div>
-            )}
           </div>
 
-          <div className="text-center text-sm text-gray-600">
-            👀 Views: {car.views}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-  if (isLoading) {
-    return <div className="text-center py-12">Loading...</div>;
-  }
-
-  if (!car) {
-    return <div className="text-center py-12">Car not found</div>;
-  }
-
-  return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-          {/* Main Image */}
-          <div className="relative w-full h-96 bg-gray-200 rounded-lg overflow-hidden mb-4">
-            {car.main_image ? (
-              <Image
-                src={car.main_image}
-                alt={car.title}
-                fill
-                className="object-cover"
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-400">
-                No image available
-              </div>
-            )}
-          </div>
-
-          {/* Title & Basic Info */}
-          <div className="bg-white p-6 rounded-lg shadow mb-4">
-            <h1 className="text-3xl font-bold mb-2">{car.title}</h1>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <div>
-                <p className="text-gray-600 text-sm">Brand</p>
-                <p className="font-semibold">{car.brand}</p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm">Model</p>
-                <p className="font-semibold">{car.model}</p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm">Year</p>
-                <p className="font-semibold">{car.year}</p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm">Mileage</p>
-                <p className="font-semibold">{car.mileage?.toLocaleString()} km</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <p className="text-gray-600 text-sm">Fuel</p>
-                <p className="font-semibold">{car.fuel_type}</p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm">Transmission</p>
-                <p className="font-semibold">{car.transmission}</p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm">Color</p>
-                <p className="font-semibold">{car.color}</p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm">Condition</p>
-                <p className="font-semibold">{car.condition}</p>
-              </div>
+          <div className="rounded-3xl bg-white p-6 shadow-lg">
+            <h2 className="text-xl font-semibold mb-4">Seller Information</h2>
+            <div className="space-y-3">
+              <p className="text-sm text-gray-500">Name</p>
+              <p className="font-semibold">{seller?.first_name} {seller?.last_name}</p>
+              <p className="text-sm text-gray-500">Phone</p>
+              <p className="font-semibold">{seller?.phone}</p>
+              <p className="text-sm text-gray-500">Email</p>
+              <p className="font-semibold">{seller?.email}</p>
             </div>
           </div>
 
-          {/* Description */}
-          {car.description && (
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-xl font-semibold mb-4">Description</h2>
-              <p className="text-gray-700">{car.description}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Sidebar */}
-        <div>
-          {/* Price & Cart */}
-          <div className="bg-white p-6 rounded-lg shadow mb-4 sticky top-4">
-            <div className="mb-4">
-              <p className="text-gray-600 text-sm">Price</p>
-              <p className="text-4xl font-bold text-blue-600">
-                ${car.price.toLocaleString()}
-              </p>
-            </div>
-
-            <button
-              onClick={handleAddToCart}
-              className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 font-semibold mb-2"
-            >
-              Add to Cart
-            </button>
-
-            {seller && (
-              <div className="border-t pt-4">
-                <h3 className="font-semibold mb-4">Seller Information</h3>
-                <div>
-                  <p className="text-sm text-gray-600">Name</p>
-                  <p className="font-semibold mb-4">
-                    {seller.first_name} {seller.last_name}
-                  </p>
-
-                  <p className="text-sm text-gray-600">Phone</p>
-                  <p className="font-semibold mb-4">{seller.phone}</p>
-
-                  <p className="text-sm text-gray-600">Email</p>
-                  <p className="font-semibold">{seller.email}</p>
-                </div>
-
-                <button className="w-full mt-4 bg-green-600 text-white py-2 rounded-md hover:bg-green-700">
-                  Contact Seller
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div className="text-center text-sm text-gray-600">
-            👀 Views: {car.views}
+          <div className="rounded-3xl bg-white p-6 shadow-lg text-center">
+            <p className="text-sm text-gray-500">Views</p>
+            <p className="mt-2 text-2xl font-semibold">{car.views.toLocaleString()}</p>
           </div>
         </div>
       </div>

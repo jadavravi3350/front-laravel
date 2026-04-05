@@ -4,9 +4,20 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+interface UserProfile {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  userType: string;
+  phone?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+}
+
 interface Order {
   id: number;
-  car_id: number;
   title: string;
   brand: string;
   model: string;
@@ -14,14 +25,11 @@ interface Order {
   price: number;
   status: string;
   created_at: string;
-  delivery_address: string;
 }
 
-// 🎭 Dummy Orders
 const DUMMY_ORDERS: Order[] = [
   {
     id: 101,
-    car_id: 1,
     title: '2020 Toyota Camry',
     brand: 'Toyota',
     model: 'Camry',
@@ -29,11 +37,9 @@ const DUMMY_ORDERS: Order[] = [
     price: 22000,
     status: 'completed',
     created_at: '2025-03-15',
-    delivery_address: '123 Main Street, City',
   },
   {
     id: 102,
-    car_id: 3,
     title: '2021 Tesla Model 3',
     brand: 'Tesla',
     model: 'Model 3',
@@ -41,13 +47,12 @@ const DUMMY_ORDERS: Order[] = [
     price: 45000,
     status: 'pending',
     created_at: '2025-04-01',
-    delivery_address: '456 Oak Avenue, Town',
   },
 ];
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [orders, setOrders] = useState<Order[]>(DUMMY_ORDERS);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -60,33 +65,39 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const storedUser = localStorage.getItem('user');
     if (!storedUser) {
       router.push('/login');
       return;
     }
-    
-    const userData = JSON.parse(storedUser);
-    setUser(userData);
-    setFormData({
-      firstName: userData.firstName || '',
-      lastName: userData.lastName || '',
-      phone: '',
-      city: '',
-      state: '',
-      country: '',
-    });
+
+    try {
+      const parsed = JSON.parse(storedUser) as UserProfile;
+      setUser(parsed);
+      setFormData({
+        firstName: parsed.firstName || '',
+        lastName: parsed.lastName || '',
+        phone: parsed.phone || '',
+        city: parsed.city || '',
+        state: parsed.state || '',
+        country: parsed.country || '',
+      });
+    } catch {
+      router.push('/login');
+    }
   }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSaveProfile = () => {
-    const updated = { ...user, ...formData };
-    localStorage.setItem('user', JSON.stringify(updated));
-    setUser(updated);
+    if (!user) return;
+    const updatedUser = { ...user, ...formData };
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    setUser(updatedUser);
     setIsEditing(false);
     alert('✅ Profile updated successfully!');
   };
@@ -98,318 +109,130 @@ export default function ProfilePage() {
   };
 
   if (!user) {
-    return <div className="text-center py-12">Loading...</div>;
+    return <div className="text-center py-16">Loading profile...</div>;
   }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Profile Card */}
-        <div className="lg:col-span-1">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-bold mb-4">👤 Profile</h2>
+      <div className="grid gap-8 lg:grid-cols-3">
+        <div className="lg:col-span-1 bg-white rounded-3xl p-6 shadow-lg">
+          <h2 className="text-2xl font-bold mb-5">My Profile</h2>
+          {!isEditing ? (
+            <div className="space-y-4">
+              <p>
+                <span className="font-semibold">Name:</span> {user.firstName} {user.lastName}
+              </p>
+              <p>
+                <span className="font-semibold">Email:</span> {user.email}
+              </p>
+              <p>
+                <span className="font-semibold">Role:</span> {user.userType}
+              </p>
 
-            {!isEditing ? (
-              <div>
-                <p className="mb-2">
-                  <span className="font-semibold">Name:</span> {user.firstName} {user.lastName}
-                </p>
-                <p className="mb-2">
-                  <span className="font-semibold">Email:</span> {user.email}
-                </p>
-                <p className="mb-4">
-                  <span className="font-semibold">Type:</span> <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">{user.userType}</span>
-                </p>
-
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 mb-2"
-                >
-                  Edit Profile
-                </button>
-
-                {user.userType === 'seller' && (
-                  <Link
-                    href="/sell"
-                    className="w-full block text-center bg-green-600 text-white py-2 rounded-md hover:bg-green-700 mb-2"
-                  >
-                    Sell a Car
-                  </Link>
-                )}
-
-                <button
-                  onClick={handleLogout}
-                  className="w-full bg-red-600 text-white py-2 rounded-md hover:bg-red-700"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  name="firstName"
-                  placeholder="First Name"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500"
-                />
-                <input
-                  type="text"
-                  name="lastName"
-                  placeholder="Last Name"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500"
-                />
-                <input
-                  type="text"
-                  name="phone"
-                  placeholder="Phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500"
-                />
+              <button
+                onClick={() => setIsEditing(true)}
+                className="w-full rounded-full bg-blue-600 px-4 py-3 text-white hover:bg-blue-700"
+              >
+                Edit Profile
+              </button>
+              <button
+                onClick={handleLogout}
+                className="w-full rounded-full border border-red-500 px-4 py-3 text-red-600 hover:bg-red-50"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <input
+                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                placeholder="First Name"
+                className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="text"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                placeholder="Last Name"
+                className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="text"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Phone"
+                className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <div className="grid gap-4 md:grid-cols-2">
                 <input
                   type="text"
                   name="city"
-                  placeholder="City"
                   value={formData.city}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500"
+                  placeholder="City"
+                  className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <input
                   type="text"
                   name="state"
-                  placeholder="State"
                   value={formData.state}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500"
+                  placeholder="State"
+                  className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <input
-                  type="text"
-                  name="country"
-                  placeholder="Country"
-                  value={formData.country}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500"
-                />
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleSaveProfile}
-                    className="flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => setIsEditing(false)}
-                    className="flex-1 bg-gray-400 text-white py-2 rounded-md hover:bg-gray-500"
-                  >
-                    Cancel
-                  </button>
-                </div>
               </div>
-            )}
-          </div>
+              <input
+                type="text"
+                name="country"
+                value={formData.country}
+                onChange={handleChange}
+                placeholder="Country"
+                className="w-full rounded-2xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={handleSaveProfile}
+                  className="flex-1 rounded-full bg-blue-600 px-4 py-3 text-white hover:bg-blue-700"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="flex-1 rounded-full border border-gray-300 px-4 py-3 hover:bg-gray-100"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Orders List */}
-        <div className="lg:col-span-2">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-bold mb-4">📦 My Orders</h2>
-
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white rounded-3xl p-6 shadow-lg">
+            <h2 className="text-2xl font-bold mb-4">Order History</h2>
             {orders.length === 0 ? (
-              <p className="text-gray-600">No orders yet</p>
+              <p className="text-gray-600">You have not placed any orders yet.</p>
             ) : (
               <div className="space-y-4">
                 {orders.map((order) => (
-                  <div key={order.id} className="border rounded-lg p-4 hover:shadow-md transition">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg">{order.title}</h3>
-                        <p className="text-gray-600 text-sm">
-                          {order.brand} {order.model} • {order.year}
-                        </p>
-                        <p className="mt-2">
-                          <span className="font-semibold">Price:</span> ${order.price.toLocaleString()}
-                        </p>
-                        <p className="text-sm">
-                          <span className="font-semibold">Status:</span>{' '}
-                          <span className={`px-2 py-1 rounded text-xs font-semibold
-                            ${order.status === 'completed' ? 'bg-green-100 text-green-800' : ''}
-                            ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : ''}
-                            ${order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' : ''}
-                          `}>
-                            {order.status.toUpperCase()}
-                          </span>
-                        </p>
-                        <p className="text-sm text-gray-600 mt-2">
-                          Ordered: {new Date(order.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-  return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Profile Card */}
-        <div className="lg:col-span-1">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-bold mb-4">Profile</h2>
-
-            {!isEditing ? (
-              <div>
-                <p className="mb-2">
-                  <span className="font-semibold">Name:</span> {user.firstName} {user.lastName}
-                </p>
-                <p className="mb-2">
-                  <span className="font-semibold">Email:</span> {user.email}
-                </p>
-                <p className="mb-4">
-                  <span className="font-semibold">Type:</span> {user.user_type}
-                </p>
-
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 mb-2"
-                >
-                  Edit Profile
-                </button>
-
-                {user.user_type === 'seller' && (
-                  <Link
-                    href="/sell"
-                    className="w-full block text-center bg-green-600 text-white py-2 rounded-md hover:bg-green-700 mb-2"
-                  >
-                    Sell a Car
-                  </Link>
-                )}
-
-                <button
-                  onClick={() => {
-                    logout();
-                    router.push('/');
-                  }}
-                  className="w-full bg-red-600 text-white py-2 rounded-md hover:bg-red-700"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  name="firstName"
-                  placeholder="First Name"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500"
-                />
-                <input
-                  type="text"
-                  name="lastName"
-                  placeholder="Last Name"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500"
-                />
-                <input
-                  type="text"
-                  name="phone"
-                  placeholder="Phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500"
-                />
-                <input
-                  type="text"
-                  name="city"
-                  placeholder="City"
-                  value={formData.city}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500"
-                />
-                <input
-                  type="text"
-                  name="state"
-                  placeholder="State"
-                  value={formData.state}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500"
-                />
-                <input
-                  type="text"
-                  name="country"
-                  placeholder="Country"
-                  value={formData.country}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500"
-                />
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleSaveProfile}
-                    className="flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => setIsEditing(false)}
-                    className="flex-1 bg-gray-400 text-white py-2 rounded-md hover:bg-gray-500"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Orders List */}
-        <div className="lg:col-span-2">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-bold mb-4">My Orders</h2>
-
-            {orders.length === 0 ? (
-              <p className="text-gray-600">No orders yet</p>
-            ) : (
-              <div className="space-y-4">
-                {orders.map((order) => (
-                  <div key={order.id} className="border rounded-lg p-4">
-                    <div className="flex justify-between items-start">
+                  <div key={order.id} className="rounded-3xl border border-gray-200 p-5 hover:shadow-md transition">
+                    <div className="flex flex-col gap-3 md:flex-row md:justify-between md:items-center">
                       <div>
-                        <h3 className="font-semibold text-lg">{order.title}</h3>
-                        <p className="text-gray-600 text-sm">
-                          {order.brand} {order.model} • {order.year}
-                        </p>
-                        <p className="mt-2">
-                          <span className="font-semibold">Price:</span> ${order.price.toLocaleString()}
-                        </p>
-                        <p className="text-sm">
-                          <span className="font-semibold">Status:</span>{' '}
-                          <span className={`px-2 py-1 rounded text-xs font-semibold
-                            ${order.status === 'completed' ? 'bg-green-100 text-green-800' : ''}
-                            ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : ''}
-                            ${order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' : ''}
-                          `}>
-                            {order.status}
-                          </span>
-                        </p>
-                        <p className="text-sm text-gray-600 mt-2">
-                          Ordered: {new Date(order.created_at).toLocaleDateString()}
-                        </p>
+                        <h3 className="text-lg font-semibold">{order.title}</h3>
+                        <p className="text-gray-500">{order.brand} {order.model} • {order.year}</p>
                       </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-blue-600">${order.price.toLocaleString()}</p>
+                        <p className="text-sm text-gray-500">{new Date(order.created_at).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    <div className="mt-3 inline-flex items-center rounded-full bg-gray-100 px-4 py-2 text-sm text-gray-700">
+                      Status: {order.status}
                     </div>
                   </div>
                 ))}
@@ -421,3 +244,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+

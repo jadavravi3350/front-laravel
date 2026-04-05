@@ -4,10 +4,11 @@ import { RowDataPacket } from 'mysql2';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const carId = parseInt(params.id);
+    const { id } = await context.params;
+    const carId = parseInt(id);
 
     // Get car details
     const [cars] = await pool.query<RowDataPacket[]>(
