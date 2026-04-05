@@ -9,11 +9,18 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4.2.2",
+    "autoprefixer": "^10.4.27",
+    "fabric": "^7.2.0",
+    "lucide-react": "^1.7.0",
     "next": "16.2.2",
+    "postcss": "^8.5.8",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
+    "@types/fabric": "^5.3.11",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

@@ -1,102 +1,96 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import Navbar from './components/Navbar';
+import HeroSection from './components/HeroSection';
+import ProductCard from './components/ProductCard';
+import { useCart } from './context/CartContext';
+
+const PRODUCTS = [
+  {
+    id: '1',
+    name: 'Classic Cotton Tee',
+    price: 19.99,
+    color: '#FFFFFF',
+  },
+  {
+    id: '2',
+    name: 'Navy Blue Tee',
+    price: 19.99,
+    color: '#000080',
+  },
+  {
+    id: '3',
+    name: 'Red Premium Tee',
+    price: 24.99,
+    color: '#FF0000',
+  },
+  {
+    id: '4',
+    name: 'Black Casual Tee',
+    price: 19.99,
+    color: '#000000',
+  },
+];
+
 export default function Home() {
+  const router = useRouter();
+  const { addItem } = useCart();
+
+  const handleCustomize = (productId: string) => {
+    router.push(`/customizer?product=${productId}`);
+  };
+
+  const handleAddToCart = (product: any) => {
+    addItem(product);
+    alert(`${product.name} added to cart!`);
+  };
+
   return (
-    <main style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '6rem',
-      minHeight: '100vh'
-    }}>
-      <div style={{
-        zIndex: 10,
-        maxWidth: '80rem',
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        fontFamily: 'monospace',
-        fontSize: '0.875rem'
-      }}>
-        <p style={{
-          position: 'fixed',
-          left: 0,
-          top: 0,
-          display: 'flex',
-          width: '100%',
-          justifyContent: 'center',
-          borderBottom: '1px solid #d1d5db',
-          background: 'linear-gradient(to bottom, #e5e7eb, #f9fafb)',
-          paddingBottom: '1.5rem',
-          paddingTop: '2rem',
-          backdropFilter: 'blur(12px)'
-        }}>
-          Get started by editing&nbsp;
-          <code style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>app/page.tsx</code>
-        </p>
-      </div>
+    <>
+      <Navbar />
+      <HeroSection />
 
-      <div style={{
-        position: 'relative',
-        display: 'flex',
-        placeItems: 'center'
-      }}>
-        <h1 style={{
-          fontSize: '2.25rem',
-          fontWeight: 'bold'
-        }}>
-          Hello World
-        </h1>
-      </div>
-
-      <div style={{
-        marginBottom: '8rem',
-        display: 'grid',
-        textAlign: 'center',
-        maxWidth: '80rem',
-        width: '100%',
-        marginTop: '2rem'
-      }}>
-        <div style={{
-          border: '1px solid transparent',
-          borderRadius: '0.5rem',
-          padding: '1.25rem',
-          transition: 'border-color 0.3s, background-color 0.3s',
-          cursor: 'pointer'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = '#d1d5db';
-          e.currentTarget.style.backgroundColor = '#f3f4f6';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = 'transparent';
-          e.currentTarget.style.backgroundColor = 'transparent';
-        }}>
-          <h2 style={{
-            marginBottom: '0.75rem',
-            fontSize: '1.5rem',
-            fontWeight: 600
-          }}>
-            Docs{' '}
-            <span style={{
-              display: 'inline-block',
-              transition: 'transform 0.3s'
-            }}>
-              -&gt;
-            </span>
-          </h2>
-          <p style={{
-            margin: 0,
-            maxWidth: '30ch',
-            fontSize: '0.875rem',
-            opacity: 0.5
-          }}>
-            Find in-depth information about Next.js features and API.
-          </p>
+      {/* Featured Products */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
+          Featured T-Shirts
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {PRODUCTS.map((product) => (
+            <ProductCard
+              key={product.id}
+              {...product}
+              image=""
+              onCustomize={handleCustomize}
+              onAddToCart={handleAddToCart}
+            />
+          ))}
         </div>
-      </div>
-    </main>
+      </section>
+
+      {/* CTA Section */}
+      <section className="bg-blue-600 text-white py-12 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-4">Ready to Create?</h2>
+          <p className="text-lg mb-6 text-blue-100">
+            Design your unique T-shirt now and stand out from the crowd.
+          </p>
+          <button
+            onClick={() => router.push('/customizer')}
+            className="px-8 py-3 bg-white text-blue-600 font-bold rounded-lg hover:bg-gray-100 transition transform hover:scale-105"
+          >
+            Start Designing Today
+          </button>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-gray-300 py-8 px-4">
+        <div className="max-w-7xl mx-auto text-center">
+          <p>&copy; 2024 CustomTee. All rights reserved.</p>
+        </div>
+      </footer>
+    </>
   );
 }
